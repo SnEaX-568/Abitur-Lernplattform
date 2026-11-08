@@ -492,6 +492,9 @@ main{max-width:1040px;margin-inline:auto}
 #upd .btn{padding:8px 14px;font-size:14px}
 @media (min-width:1100px){#upd{margin-left:120px}}
 .vchg{margin-top:10px}.vchg ul{margin:4px 0 0;padding-left:20px}
+#devb{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:25;width:30px;height:30px;padding:0;border:0;border-radius:10px;display:grid;place-items:center;font:800 15px/1 var(--f-hd);color:#fff;background:linear-gradient(135deg,#f5a524,#d9480f);box-shadow:0 2px 10px rgba(217,72,15,.35),inset 0 0 0 1px rgba(255,255,255,.25);cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+#devb:hover{transform:scale(1.08)}#devb:active{transform:scale(.94)}#devb:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+@media (min-width:1100px){#devb{bottom:max(16px,env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px))}}
 @media (max-width:760px){.les{grid-template-columns:auto auto auto 1fr;padding-left:8px}.les input[data-lk],.les select[data-lf]{grid-column:span 2}.les input[data-ll],.les input[data-lr]{grid-column:span 2}.les button{grid-column:4;grid-row:1}}
 @media (max-width:600px){.wzl{grid-template-columns:1fr}.krow{grid-template-columns:1fr auto}.krow .kbar,.krow .mu{grid-column:1/-1}.gle{grid-template-columns:1fr auto}.gle dd{grid-column:1/-1}.krate{grid-template-columns:repeat(2,1fr)}.msg{max-width:92%}.hbar{grid-template-columns:60px 1fr 70px}}
 
@@ -598,8 +601,8 @@ const FERIEN_HE=[{type:"ferien",from:"2026-12-23",to:"2027-01-12",label:"Weihnac
 /* Läuft die Seite in Claude (KI, Sync, Downloads verfügbar) oder als normale Webseite/App? */
 const IN_CLAUDE=!!window.claude;
 /* Version + Änderungen (erscheinen nach einem Update als Hinweis und unter Profil → Darstellung) */
-const APP_VERSION="13";
-const CHANGES={"13":["Bundesland wählbar (Hessen vollständig, andere Länder mit Richtwerten)","Alle Fächer mit offiziellen Hessen-Themen 2027","Hinweis, wenn eine neue Version bereitsteht"],
+const APP_VERSION="15";
+const CHANGES={"15":["Sicherere Synchronisation: Ein neues Gerät oder ein leerer Speicher überschreibt nie gespeicherte Daten","Hinweis, wie man Daten in die Browser-Version übernimmt"],"14":["Kleine Verbesserungen"],"13":["Bundesland wählbar (Hessen vollständig, andere Länder mit Richtwerten)","Alle Fächer mit offiziellen Hessen-Themen 2027","Hinweis, wenn eine neue Version bereitsteht"],
   "12":["Läuft im Browser und als App","KI über die Claude-Brücke","Größerer Speicher mit Aufräumen und Backup-Erinnerung"],
   "11":["5 Bereiche: Heute, Plan, Lernen, Prüfungen, Profil","Karteikarten, Glossar, Simulation, mündliches Training, Abi-Rechner"]};
 let swReg=null;
@@ -611,8 +614,13 @@ function initUpdates(){if(IN_CLAUDE||!("serviceWorker" in navigator)||location.p
   navigator.serviceWorker.register("sw.js").then(reg=>{swReg=reg;if(reg.waiting&&navigator.serviceWorker.controller)updBanner();
     reg.addEventListener("updatefound",()=>{const nw=reg.installing;if(nw)nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller)updBanner();});});
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update().catch(()=>{});});setInterval(()=>reg.update().catch(()=>{}),3600e3);}).catch(()=>{});}
-function whatsNew(){const S=Store.state;if(S.seenVersion&&S.seenVersion!==APP_VERSION&&CHANGES[APP_VERSION])setTimeout(()=>toast("Aktualisiert auf Version "+APP_VERSION+": "+CHANGES[APP_VERSION].join(" · ")),800);
-  if(S.seenVersion!==APP_VERSION){S.seenVersion=APP_VERSION;Store.save();}}
+/* „Was ist neu“ pro Gerät merken (nicht im Lernstand speichern, damit der Start nie als Änderung zählt) */
+function whatsNew(){let seen=null;try{seen=localStorage.getItem("abi-seen");}catch(e){}if(seen===null)seen=Store.state.seenVersion||null;
+  if(seen&&seen!==APP_VERSION&&CHANGES[APP_VERSION])setTimeout(()=>toast("Aktualisiert auf Version "+APP_VERSION+": "+CHANGES[APP_VERSION].join(" · ")),800);
+  try{localStorage.setItem("abi-seen",APP_VERSION);}catch(e){}}
+/* Enthält ein Stand echte Lerndaten? (Grundlage für den Schutz vor Überschreiben) */
+function isEmptyData(x){if(!x)return true;const n=a=>Array.isArray(a)&&a.length>0,o=v=>v&&typeof v==="object"&&Object.keys(v).length>0;
+  return !(n(x.klausuren)||n(x.zettel)||n(x.zettelIds)||n(x.files)||n(x.fileIds)||n(x.cards)||n(x.sims)||n(x.orals)||n(x.log)||o(x.grades)||o(x.gloss)||o(x.status));}
 const IDB={p:null,
   open(){ return this.p||(this.p=new Promise((res,rej)=>{ try{ if(!window.indexedDB) throw new Error("kein IndexedDB"); const r=indexedDB.open("abitur-lernplattform",1);
     r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); r.onblocked=()=>rej(new Error("blockiert")); }catch(e){ rej(e); } })); },
@@ -973,16 +981,22 @@ const Sync={col:null,t:null,sent:new Set(),last:"verbinde …",
   async init(){try{const c=window.claude;if(!c)return this.badge("nur lokal");const db=await c.use("db"),u=await c.use("user"),id=u&&await u.id();
       if(!db||!id)return this.badge("nur lokal (Sync nicht verfügbar)");
       this.col=db.collection("data/users/"+id);this.badge("verbinde …");
-      this.col.doc("state").onSnapshot(sn=>{if(sn.metadata.hasPendingWrites)return;const d=sn.exists?sn.data():null,lu=Store.state.updated||0;
-        if(!d||(d.updated||0)<lu)this.push();else if((d.updated||0)>lu)this.pull(d);else this.badge("✓ synchronisiert");});
+      this.col.doc("state").onSnapshot(sn=>{if(sn.metadata.hasPendingWrites)return;const d=sn.exists?sn.data():null,S=Store.state,lu=S.updated||0,du=d?(d.updated||0):0;
+        if(!d){this.ready=true;this.push();return;}
+        /* Schutz: Ein leerer Speicher (neues Gerät, neue Version, gelöschter Browser) überschreibt nie den Cloud-Stand, sondern holt ihn. */
+        if(isEmptyData(S)&&!isEmptyData(d)&&!(S.syncBase&&S.syncBase>=du)){this.ready=true;this.pull(d);return;}
+        this.ready=true;if(du<lu)this.push();else if(du>lu)this.pull(d);else{S.syncBase=du;this.badge("✓ synchronisiert");}});
     }catch(e){this.badge("Sync-Fehler");}},
   async pull(d){try{const {fileIds=[],zettelIds,zettelRev={},...rest}=d,haveZ=new Map((Store.state.zettel||[]).map(z=>[z.id,z])),zettel=[],have=new Map(Store.state.files.map(f=>[f.id,f])),files=[];
       for(const id of fileIds){if(have.has(id)){files.push(have.get(id));continue;}const sn=await this.col.doc("f_"+id).get();if(sn.exists){files.push(sn.data());this.sent.add(id);}}
       if(Array.isArray(zettelIds)){for(const id of zettelIds){const loc=haveZ.get(id);if(loc&&(loc.rev||0)>=(zettelRev[id]||0)){zettel.push(loc);continue;}
         const sn=await this.col.doc("z_"+id).get();if(sn.exists){const v=sn.data();zettel.push(v);this.sent.add(id+":"+(v.rev||0));}else if(loc)zettel.push(loc);}}
-      Object.assign(Store.state,rest,{files},Array.isArray(zettelIds)?{zettel}:{});Store.norm();Store.flush();this.badge("✓ synchronisiert");render();
+      Object.assign(Store.state,rest,{files},Array.isArray(zettelIds)?{zettel}:{});Store.state.syncBase=d.updated||0;Store.norm();Store.flush();this.badge("✓ synchronisiert");render();
     }catch(e){this.badge("Sync-Fehler");}},
-  push(){if(!this.col)return;clearTimeout(this.t);this.badge("speichere …");this.t=setTimeout(async()=>{try{const {files,zettel=[],...rest}=Store.state;
+  push(){if(!this.col||!this.ready)return;clearTimeout(this.t);this.badge("speichere …");this.t=setTimeout(async()=>{try{
+      if(isEmptyData(Store.state)){const sn=await this.col.doc("state").get();const cd=sn.exists?sn.data():null;
+        if(cd&&!isEmptyData(cd)&&!(Store.state.syncBase&&Store.state.syncBase>=(cd.updated||0))){await this.pull(cd);return;}}
+      Store.state.syncBase=Store.state.updated||0;const {files,zettel=[],...rest}=Store.state;
       for(const f of files){if(!this.sent.has(f.id)){await this.col.doc("f_"+f.id).set(f);this.sent.add(f.id);}}
       for(const z of zettel){const k=z.id+":"+(z.rev||0);if(!this.sent.has(k)){await this.col.doc("z_"+z.id).set(z);this.sent.add(k);}}
       await this.col.doc("state").set({...rest,fileIds:files.map(f=>f.id),zettelIds:zettel.map(z=>z.id),zettelRev:Object.fromEntries(zettel.map(z=>[z.id,z.rev||0]))});this.badge("✓ synchronisiert");}catch(e){this.badge("Sync-Fehler");}},800);}
@@ -1224,6 +1238,7 @@ Object.assign(Views,{
       <div class="eyebrow">Abitur ${exD?exD.slice(0,4):"2027"} · ${esc(LN())}</div><div class="big">${days>0?days:days===0?"Heute":"–"}</div>
       <div class="dlead">${days>0?(days===1?"Tag":"Tage")+" bis zur ersten Prüfung":days===0?"Heute ist Prüfungstag. Viel Erfolg!":"Trag deine Prüfungstermine ein"}</div>
       <div class="dmeta"><button data-go="stats">${ic("flame")} ${st} ${st===1?"Tag":"Tage"} am Stück</button><button data-go="progress">Lernstand ${total()} %</button><button data-go="setup" class="${bad?"bad":""}">${bad?`${bad} ${bad===1?"Regel":"Regeln"} offen`:"Fächerwahl passt"}</button></div></section>
+      ${!IN_CLAUDE&&isEmptyData(S)?`<div class="pban bkr"><span>Hier im Browser ist noch nichts gespeichert. Deine Daten aus der Claude-Version holst du so: dort unter Profil → Backup „Backup herunterladen“, hier „Backup-Datei einspielen“.</span><button class="btn" data-go="backup">Backup einspielen</button></div>`:""}
       ${!IN_CLAUDE&&(S.zettel.length||S.klausuren.length||S.cards.length)&&(!S.lastFileBackup||S.lastFileBackup<dayAdd(tk,-7))?`<div class="pban p-puffer bkr"><span>Deine Daten liegen nur in diesem Browser. ${S.lastFileBackup?"Letztes Backup: "+fmtDate(S.lastFileBackup)+".":"Du hast noch kein Backup."}</span><button class="btn" data-go="backup">Backup herunterladen</button></div>`:""}
       <div class="dash">
         <div class="card dcard2"><div class="row sp"><h3 style="margin:0">Heute lernen</h3><button class="lnk" data-go="daily">Plan ›</button></div>
@@ -1656,7 +1671,7 @@ const Backup={busy:false,
     const old=list.slice(7);list=list.slice(0,7);await c.doc("backups").set({list});for(const o of old){try{await c.doc(o).delete();}catch(e){}}return list;},
   async list(){const c=Sync.col;if(!c)return null;const ix=await c.doc("backups").get();return ix.exists?(ix.data().list||[]):[];},
   apply(st,files){const keep=Store.state.files;Object.keys(Store.state).forEach(k=>delete Store.state[k]);Object.assign(Store.state,st,{files:files||keep});Store.norm();Sync.sent.clear();Store.save();},
-  auto(){if(this.busy||!Sync.col||Store.state.lastBackup===todayK())return;this.busy=true;this.cloud().then(()=>{Store.state.lastBackup=todayK();Store.save();}).catch(()=>{}).finally(()=>{this.busy=false;});}};
+  auto(){if(this.busy||!Sync.col||!Sync.ready||isEmptyData(Store.state)||Store.state.lastBackup===todayK())return;this.busy=true;this.cloud().then(()=>{Store.state.lastBackup=todayK();Store.save();}).catch(()=>{}).finally(()=>{this.busy=false;});}};
 setInterval(()=>Backup.auto(),20000);
 let bkPending=null;
 Views.backup=function(){const S=Store.state;
@@ -1750,7 +1765,10 @@ document.addEventListener("touchend",e=>{if(!sOk)return;const t=e.changedTouches
 (async()=>{ await Store.load(); go(Store.state.setupDone?"home":"wizard"); Sync.init(); AI.get().catch(()=>{});
   if(Store.state.lastClean!==undefined&&Store.state.lastClean<dayAdd(todayK(),-30)) cleanup(true); else if(Store.state.lastClean===undefined){ Store.state.lastClean=todayK(); }
   if(!IN_CLAUDE&&navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-  initUpdates(); whatsNew(); })();
+  initUpdates(); whatsNew(); devBadge(); })();
+/* Kennzeichen „E“: nur in der Entwickler-Version sichtbar */
+function devBadge(){if(EDITION!=="dev"||document.getElementById("devb"))return;const b=document.createElement("button");b.id="devb";b.type="button";b.textContent="E";
+  b.title="Entwickler-Version · Version "+APP_VERSION;b.setAttribute("aria-label","Entwickler-Version, Version "+APP_VERSION+". Öffnet die Versionsinfo.");b.onclick=()=>go("options");document.body.appendChild(b);}
 /* Beim Schließen oder Wechseln der App ungespeicherte Änderungen sofort schreiben */
 addEventListener("pagehide",()=>{ if(Store.wt) Store.flush(); });
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&Store.wt) Store.flush(); });
