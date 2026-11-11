@@ -3,233 +3,268 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Begriffsregen</title>
-<meta name="theme-color" content="#2f5fd0">
+<title>Orbit Rush</title>
+<meta name="theme-color" content="#0b0b1a">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
-:root{--bg:#f4f5f2;--card:#fff;--tx:#1d1d1b;--mu:#66665f;--bd:#e0e0d8;--ac:#2f5fd0;--ac2:#e6edfc;--ok:#2e8b57;--bad:#c0392b;--gold:#d98a00}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141413;--card:#212120;--tx:#f0f0ec;--mu:#a3a39c;--bd:#34342f;--ac:#7ea2ff;--ac2:#232c47;--ok:#5cc08a;--bad:#ff8a7a;--gold:#f0b040}}
-:root[data-theme="dark"]{--bg:#141413;--card:#212120;--tx:#f0f0ec;--mu:#a3a39c;--bd:#34342f;--ac:#7ea2ff;--ac2:#232c47;--ok:#5cc08a;--bad:#ff8a7a;--gold:#f0b040}
+:root{--bg:#0b0b1a;--card:#16162b;--tx:#f2f2ff;--mu:#9a9ac0;--bd:#2c2c4a;--ac:#5ee7ff;--ac2:#ff4fd8;--gold:#ffd25e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b1a;--card:#16162b;--tx:#f2f2ff;--mu:#9a9ac0;--bd:#2c2c4a}}
+:root[data-theme="dark"]{--bg:#0b0b1a;--card:#16162b;--tx:#f2f2ff;--mu:#9a9ac0;--bd:#2c2c4a}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
-#wrap{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
-#hud{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--bd)}
-#hud a,#hud button{color:var(--mu);text-decoration:none;font:inherit;background:none;border:0;cursor:pointer;padding:4px}
-#cat{flex:1;text-align:center;font-weight:700;color:var(--ac);font-size:15px;line-height:1.2}
-#cat small{display:block;font-weight:500;color:var(--mu);font-size:12px}
-.st{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
-#stage{flex:1;position:relative}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent)}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;pointer-events:none;z-index:2}
+#top a,#top button{pointer-events:auto;color:var(--mu);text-decoration:none;font:inherit;font-size:20px;background:none;border:0;cursor:pointer;padding:6px}
+.ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:3;background:rgba(11,11,26,.55)}
 .ov[hidden]{display:none}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:24px;max-width:420px;width:100%;text-align:center}
-.box h1{margin:0 0 6px;font-size:26px}
-.box p{margin:8px 0;color:var(--mu)}
-.btn{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:12px 22px;font:600 17px system-ui,sans-serif;cursor:pointer;margin-top:12px}
-.btn.ghost{background:var(--ac2);color:var(--ac)}
+.box{text-align:center;max-width:380px;width:100%}
+.box h1{margin:0;font:900 44px/1 system-ui,sans-serif;letter-spacing:-1px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.box p{margin:10px 0;color:var(--mu)}
+.big{font:900 64px/1 system-ui,sans-serif;font-variant-numeric:tabular-nums;margin:8px 0}
+.tap{display:inline-block;margin-top:18px;padding:12px 26px;border-radius:99px;background:var(--ac);color:#0b0b1a;font-weight:800;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.pw{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--mu);margin-top:6px}
+.pw i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 kbd{border:1px solid var(--bd);border-radius:5px;padding:0 5px;font-size:13px}
 #boss{position:fixed;inset:0;background:#fff;color:#222;padding:32px 24px;overflow:auto;font:15px/1.6 Georgia,serif;z-index:9}
 #boss[hidden]{display:none}
 #boss h2{font:700 20px system-ui,sans-serif;margin:0 0 4px}
 #boss .m{color:#777;font:13px system-ui,sans-serif;margin-bottom:18px}
 #boss li{margin:6px 0}
-.miss{margin-top:10px;text-align:left;font-size:14px;color:var(--mu);max-height:140px;overflow:auto}
-.miss b{color:var(--tx)}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="hud">
-    <a href="./" title="Zurück zur Lernplattform" aria-label="Zurück">←</a>
-    <span class="st" id="lives">♥♥♥</span>
-    <div id="cat">Begriffsregen<small>Religion</small></div>
-    <span class="st" id="score">0</span>
-    <button id="bossBtn" title="Lehrer kommt! (Leertaste oder Esc)" aria-label="Tarnmodus">🙈</button>
+<canvas id="c"></canvas>
+<div id="top">
+  <a href="./" title="Zurück zur Lernplattform" aria-label="Zurück">←</a>
+  <button id="bossBtn" title="Tarnmodus (Esc oder B)" aria-label="Tarnmodus">🙈</button>
+</div>
+
+<div class="ov" id="start">
+  <div class="box">
+    <h1>ORBIT RUSH</h1>
+    <p><b>Tippen</b> = Bahn wechseln.<br>Sterne sammeln, Meteoren ausweichen. Ein Treffer und es ist vorbei.</p>
+    <div class="pw"><span><i style="background:#5ee7ff"></i>Schild</span><span><i style="background:#b388ff"></i>Zeitlupe</span><span><i style="background:#ffd25e"></i>Punkte ×2</span><span><i style="background:#ff4fd8"></i>Bombe</span></div>
+    <p id="best1"></p>
+    <p style="font-size:13px">Am Laptop: <kbd>Leertaste</kbd> / <kbd>↑</kbd> <kbd>↓</kbd> · Tarnmodus: <kbd>Esc</kbd>, <kbd>B</kbd> oder 🙈</p>
+    <span class="tap">Tippen zum Starten</span>
   </div>
-  <div id="stage">
-    <canvas id="c"></canvas>
-    <div class="ov" id="start">
-      <div class="box">
-        <h1>Begriffsregen ✝️</h1>
-        <p>Oben steht eine Kategorie. Fang mit der Schale nur die <b>passenden</b> Begriffe – falsche kosten ein Leben.</p>
-        <p>Steuerung: Finger/Maus ziehen oder <kbd>←</kbd> <kbd>→</kbd>.<br>Tarnmodus, wenn jemand guckt: <kbd>Leertaste</kbd>, <kbd>Esc</kbd> oder 🙈.</p>
-        <p id="best1"></p>
-        <button class="btn" id="go">Los geht's</button>
-      </div>
-    </div>
-    <div class="ov" id="over" hidden>
-      <div class="box">
-        <h1 id="ovT">Vorbei!</h1>
-        <p id="ovS"></p>
-        <div class="miss" id="ovM"></div>
-        <button class="btn" id="again">Nochmal</button>
-        <a class="btn ghost" href="./" style="display:inline-block;text-decoration:none">Zur Plattform</a>
-      </div>
-    </div>
+</div>
+<div class="ov" id="over" hidden>
+  <div class="box">
+    <p id="ovT" style="font-weight:800;color:var(--ac2);margin:0">CRASH!</p>
+    <div class="big" id="ovS">0</div>
+    <p id="ovB"></p>
+    <span class="tap" id="ovTap">Nochmal</span>
   </div>
 </div>
 
 <div id="boss" hidden>
   <h2>Q2.2 Religionskritik und Theodizee – Mitschrift</h2>
-  <div class="m">Ev. Religion · Leistungskurs · Stunde 14</div>
+  <div class="m">Ev. Religion · Stunde 14</div>
   <ol>
     <li><b>Theodizee-Frage</b> (Leibniz, 1710): Wie lässt sich die Existenz eines allmächtigen und gütigen Gottes angesichts des Leids in der Welt rechtfertigen?</li>
     <li><b>Epikur-Trilemma</b>: Gott will das Übel verhindern, kann aber nicht → nicht allmächtig; kann, will aber nicht → nicht gütig; will und kann → woher dann das Übel?</li>
-    <li><b>Feuerbach</b>: Projektionstheorie – „Der Mensch schuf Gott nach seinem Bilde.“ Theologie ist im Kern Anthropologie.</li>
-    <li><b>Marx</b>: Religion als „Opium des Volkes“ – Ausdruck und Protest gegen reales Elend, zugleich Vertröstung.</li>
-    <li><b>Freud</b>: Religion als Illusion, entstanden aus kindlichem Schutzbedürfnis (Vaterwunsch).</li>
-    <li><b>Antwortversuche</b>: Free-Will-Defense, Hiob (Unbegreiflichkeit Gottes), Mitleidender Gott (Moltmann: „Der gekreuzigte Gott“), Prozesstheologie.</li>
-    <li><b>Hausaufgabe</b>: Material M3 lesen, Position Moltmanns mit Feuerbach vergleichen (AFB III).</li>
+    <li><b>Feuerbach</b>: Projektionstheorie – „Der Mensch schuf Gott nach seinem Bilde.“</li>
+    <li><b>Marx</b>: Religion als „Opium des Volkes“ – Protest gegen reales Elend, zugleich Vertröstung.</li>
+    <li><b>Freud</b>: Religion als Illusion aus kindlichem Schutzbedürfnis.</li>
+    <li><b>Antwortversuche</b>: Free-Will-Defense, Hiob, Mitleidender Gott (Moltmann), Prozesstheologie.</li>
+    <li><b>Hausaufgabe</b>: M3 lesen, Moltmann mit Feuerbach vergleichen (AFB III).</li>
   </ol>
-  <p class="m">Weiter zum Spiel: Leertaste, Esc oder irgendwo zweimal tippen.</p>
+  <p class="m">Weiter: Esc, B oder zweimal tippen.</p>
 </div>
 
 <script>
 "use strict";
-const SETS=[
-  {n:"Religionskritiker",h:"Wer hat Religion kritisiert?",y:["Feuerbach","Marx","Freud","Nietzsche","Dawkins","Epikur"],x:["Barth","Bonhoeffer","Küng","Moltmann","Luther"]},
-  {n:"Evangelische Theologen",h:"Protestantisch geprägt",y:["Luther","Barth","Bonhoeffer","Bultmann","Tillich","Moltmann","Sölle"],x:["Küng","Rahner","Thomas v. Aquin","Feuerbach","Ratzinger"]},
-  {n:"Synoptische Evangelien",h:"Die drei „Zusammenschauenden“",y:["Matthäus","Markus","Lukas"],x:["Johannes","Paulus","Petrus","Thomas","Jakobus"]},
-  {n:"Reich-Gottes-Gleichnisse",h:"Bilder für das Reich Gottes",y:["Senfkorn","Sauerteig","Schatz im Acker","Perle","Wachsende Saat","Fischnetz"],x:["Bergpredigt","Exodus","Pfingsten","Sintflut","Turmbau zu Babel"]},
-  {n:"Ethische Modelle",h:"Wie man moralisch argumentiert",y:["Kategorischer Imperativ","Utilitarismus","Tugendethik","Diskursethik","Verantwortungsethik","Goldene Regel"],x:["Projektionstheorie","Rechtfertigungslehre","Trinität","Eschatologie"]},
-  {n:"Sakramente (kath.)",h:"Sieben Stück",y:["Taufe","Firmung","Eucharistie","Buße","Krankensalbung","Weihe","Ehe"],x:["Konfirmation","Segnung","Fasten","Wallfahrt","Rosenkranz"]},
-  {n:"Bücher der Tora",h:"Die fünf Bücher Mose",y:["Genesis","Exodus","Levitikus","Numeri","Deuteronomium"],x:["Psalmen","Jesaja","Hiob","Apokalypse","Römerbrief"]},
-  {n:"Theodizee-Antworten",h:"Warum lässt Gott Leid zu?",y:["Free-Will-Defense","Beste aller Welten","Hiob","Mitleidender Gott","Prozesstheologie","Läuterung"],x:["Opium des Volkes","Ockhams Rasiermesser","Sola scriptura","Ablass"]},
-  {n:"Weltreligionen: Islam",h:"Was gehört zum Islam?",y:["Koran","Ramadan","Mekka","Fünf Säulen","Hadsch","Moschee"],x:["Tora","Pessach","Karma","Nirwana","Synagoge","Sabbat"]},
-  {n:"Weltreligionen: Judentum",h:"Was gehört zum Judentum?",y:["Tora","Pessach","Synagoge","Sabbat","Talmud","Bar Mizwa"],x:["Koran","Ramadan","Karma","Eucharistie","Nirwana"]},
-  {n:"Reformation",h:"Luthers Programm",y:["Sola fide","Sola gratia","Sola scriptura","Solus Christus","95 Thesen","Wittenberg"],x:["Ablass","Zölibat","Trient","Papsttum","Inquisition"]},
-];
 const $=id=>document.getElementById(id);
 const cv=$("c"),cx=cv.getContext("2d");
-let W=0,H=0,DPR=1;
-const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-let C={};
-function colors(){C={tx:css("--tx"),mu:css("--mu"),card:css("--card"),bd:css("--bd"),ac:css("--ac"),ac2:css("--ac2"),ok:css("--ok"),bad:css("--bad"),gold:css("--gold")};}
-function resize(){const r=$("stage").getBoundingClientRect();DPR=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);}
-addEventListener("resize",resize);
-matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",colors);
+let W,H,R,CX,CY,DPR;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);
+  R=Math.min(W,H);CX=W/2;CY=H/2+Math.min(20,H*0.02);}
+addEventListener("resize",resize);resize();
 
-const BEST_K="abi-spiel-best";
+const BEST_K="orbit-rush-best";
 const getBest=()=>{try{return +localStorage.getItem(BEST_K)||0}catch(e){return 0}};
 const setBest=v=>{try{localStorage.setItem(BEST_K,v)}catch(e){}};
-const showBest=()=>{const b=getBest();$("best1").textContent=b?`Rekord: ${b} Punkte`:"";};
+const showBest=()=>{const b=getBest();$("best1").textContent=b?`Rekord: ${b}`:"";};
 
-let G=null,running=false,paused=false,last=0;
-const keys={l:false,r:false};
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+// Hintergrundsterne
+const BG=Array.from({length:120},()=>({x:Math.random(),y:Math.random(),z:Math.random()*0.8+0.2}));
+const PW={shield:"#5ee7ff",slow:"#b388ff",x2:"#ffd25e",bomb:"#ff4fd8"};
 
+let G=null,state="start",last=0,paused=false,overAt=0;
+const lanes=()=>[R*0.2,R*0.36];
 function newGame(){
-  G={score:0,lives:3,combo:0,t:0,items:[],fx:[],spawn:0.6,round:0,roundT:0,setOrder:shuffle(SETS.slice()),
-     px:W/2,pw:Math.min(140,W*0.32),misses:[],caught:0};
-  nextSet();updHud();
+  G={t:0,score:0,stars:0,lane:1,r:lanes()[1],a:-Math.PI/2,dir:1,combo:0,comboT:0,
+     met:[],items:[],parts:[],pops:[],trail:[],mSpawn:1.2,sSpawn:0.4,pSpawn:9,
+     shield:0,slow:0,x2:0,shake:0,flash:0,level:1,lvlT:0};
 }
-function nextSet(){
-  G.set=G.setOrder[G.round%G.setOrder.length];G.round++;G.roundT=18;
-  $("cat").innerHTML=`${G.set.n}<small>${G.set.h} · Runde ${G.round}</small>`;
-  G.items.forEach(it=>it.fade=true);
-  G.fx.push({k:"banner",t:0,txt:G.set.n});
+function lvlHue(){return (200+G.level*47)%360;}
+function tap(){
+  if(paused)return;
+  if(state==="start"){start();return;}
+  if(state==="over"){if(performance.now()-overAt>600)start();return;}
+  G.lane=1-G.lane;
+  burst(px(),py(),6,"#ffffff",80,0.25);
 }
-function speed(){return 70+G.round*12+G.t*0.8;}
-function spawn(){
-  const s=G.set,good=Math.random()<0.55;
-  const pool=good?s.y:(Math.random()<0.6?s.x:SETS.filter(o=>o!==s).flatMap(o=>o.y).filter(w=>!s.y.includes(w)));
-  const txt=pool[Math.random()*pool.length|0];
-  cx.font="600 15px system-ui,sans-serif";
-  const w=cx.measureText(txt).width+24,x=12+Math.random()*Math.max(1,W-w-24);
-  G.items.push({txt,good,x,y:-30,w,h:32,v:speed()*(0.8+Math.random()*0.4),wob:Math.random()*6});
+const px=()=>CX+Math.cos(G.a)*G.r, py=()=>CY+Math.sin(G.a)*G.r;
+function burst(x,y,n,c,sp,life){for(let i=0;i<n;i++){const a=Math.random()*6.283,v=sp*(0.3+Math.random());G.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,c,t:0,l:life*(0.6+Math.random()*0.6)});}}
+function pop(txt,x,y,c){G.pops.push({txt,x,y,c,t:0});}
+function start(){newGame();state="play";$("start").hidden=true;$("over").hidden=true;}
+function die(){
+  state="over";overAt=performance.now();G.shake=0.5;G.flash=0.4;burst(px(),py(),60,"#ff4fd8",320,1.1);burst(px(),py(),30,"#ffffff",200,0.8);
+  if(navigator.vibrate)try{navigator.vibrate([80,40,120])}catch(e){}
+  const b=getBest(),rec=G.score>b;if(rec)setBest(G.score);
+  setTimeout(()=>{$("ovT").textContent=rec?"NEUER REKORD!":"CRASH!";$("ovS").textContent=G.score;
+    $("ovB").textContent=`${G.stars} Sterne · ${Math.floor(G.t)} s · Level ${G.level}`+(rec?"":` · Rekord ${b}`);$("over").hidden=false;},450);
 }
-function updHud(){$("score").textContent=G.score;$("lives").textContent="♥".repeat(G.lives)+"♡".repeat(Math.max(0,3-G.lives));}
 
-function step(dt){
-  G.t+=dt;G.roundT-=dt;
-  if(G.roundT<=0)nextSet();
-  G.spawn-=dt;
-  if(G.spawn<=0){spawn();G.spawn=Math.max(0.45,1.25-G.round*0.06-G.t*0.004);}
-  const sp=W*1.4;
-  if(keys.l)G.px-=sp*dt;if(keys.r)G.px+=sp*dt;
-  G.px=Math.max(G.pw/2,Math.min(W-G.pw/2,G.px));
-  const py=H-34;
-  for(const it of G.items){
-    it.y+=it.v*dt;
-    if(it.fade){it.a=(it.a??1)-dt*3;continue;}
-    const cxm=it.x+it.w/2;
-    if(it.y+it.h>=py&&it.y<py+14&&Math.abs(cxm-G.px)<G.pw/2+it.w/2-10){
-      it.dead=true;
-      if(it.good){G.combo++;const pts=10*Math.min(5,1+Math.floor(G.combo/4));G.score+=pts;G.caught++;
-        G.fx.push({k:"pop",x:cxm,y:py-10,t:0,txt:"+"+pts,c:C.ok});}
-      else{G.combo=0;G.lives--;G.misses.push([it.txt,G.set.n]);
-        G.fx.push({k:"pop",x:cxm,y:py-10,t:0,txt:"✗ "+it.txt,c:C.bad});G.fx.push({k:"shake",t:0});
-        if(navigator.vibrate)try{navigator.vibrate(60)}catch(e){}}
-      updHud();
-    } else if(it.y>H){it.dead=true;}
-  }
-  G.items=G.items.filter(it=>!it.dead&&(it.a===undefined||it.a>0));
-  G.fx.forEach(f=>f.t+=dt);G.fx=G.fx.filter(f=>f.t<(f.k==="banner"?1.6:f.k==="shake"?0.3:0.9));
-  if(G.lives<=0)end();
+function spawnMeteor(){
+  const big=Math.random()<Math.min(0.35,G.t*0.006),fast=G.t>25&&Math.random()<0.2;
+  const ang=Math.random()*6.283,d=Math.hypot(W,H)/2+40;
+  const tx=CX+(Math.random()-.5)*R*0.15,ty=CY+(Math.random()-.5)*R*0.15;
+  const x=CX+Math.cos(ang)*d,y=CY+Math.sin(ang)*d,dd=Math.hypot(tx-x,ty-y);
+  const v=R*(0.42+G.t*0.006)*(fast?1.9:1)*(big?0.75:1);
+  G.met.push({x,y,vx:(tx-x)/dd*v,vy:(ty-y)/dd*v,r:R*(big?0.04:0.022),rot:Math.random()*6,fast,seed:Math.random()*1000});
 }
-function rr(x,y,w,h,r){cx.beginPath();cx.roundRect?cx.roundRect(x,y,w,h,r):cx.rect(x,y,w,h);}
-function draw(){
-  cx.clearRect(0,0,W,H);
-  const sh=G.fx.find(f=>f.k==="shake");cx.save();
-  if(sh)cx.translate((Math.random()-.5)*8*(1-sh.t/0.3),0);
-  cx.font="600 15px system-ui,sans-serif";cx.textBaseline="middle";cx.textAlign="center";
+function spawnItem(kind){
+  const L=lanes(),lane=Math.random()<.5?0:1;
+  const a=G.a+G.dir*(0.9+Math.random()*3.5);
+  G.items.push({kind,lane,a,r:L[lane],t:0,ttl:kind==="star"?6:7});
+}
+function step(dt){
+  const L=lanes();
+  G.t+=dt;G.lvlT+=dt;
+  if(G.lvlT>=20){G.lvlT=0;G.level++;pop("LEVEL "+G.level,CX,CY-R*0.48,"#ffffff");G.flash=0.15;}
+  const md=G.slow>0?0.45:1; // Zeitlupe für Meteore
+  G.r+=(L[G.lane]-G.r)*Math.min(1,dt*16);
+  G.a+=G.dir*(1.7+G.t*0.012)*dt;
+  G.trail.push([px(),py()]);if(G.trail.length>14)G.trail.shift();
+  ["shield","slow","x2"].forEach(k=>G[k]=Math.max(0,G[k]-dt));
+  G.comboT-=dt;if(G.comboT<=0)G.combo=0;
+  G._sec=(G._sec||0)+dt;if(G._sec>=1){G._sec-=1;G.score+=G.x2>0?2:1;}
+
+  G.mSpawn-=dt*md;if(G.mSpawn<=0){spawnMeteor();if(G.t>45&&Math.random()<.3)spawnMeteor();G.mSpawn=Math.max(0.32,1.2-G.t*0.014);}
+  G.sSpawn-=dt;if(G.sSpawn<=0){if(G.items.filter(i=>i.kind==="star").length<4)spawnItem("star");G.sSpawn=0.9+Math.random()*0.8;}
+  G.pSpawn-=dt;if(G.pSpawn<=0){const ks=["shield","slow","x2","bomb"];spawnItem(ks[Math.random()*4|0]);G.pSpawn=8+Math.random()*6;}
+
+  const X=px(),Y=py(),pr=R*0.022;
+  for(const m of G.met){
+    m.x+=m.vx*dt*md;m.y+=m.vy*dt*md;m.rot+=dt*2;
+    if(Math.random()<0.6)G.parts.push({x:m.x,y:m.y,vx:-m.vx*0.1,vy:-m.vy*0.1,c:m.fast?"#ff4fd8":"#ff9a3c",t:0,l:0.35});
+    if(Math.hypot(m.x-CX,m.y-CY)<R*0.08){m.dead=true;burst(m.x,m.y,10,"#ff9a3c",120,0.4);G.shake=Math.max(G.shake,0.08);}
+    else if(Math.hypot(m.x-X,m.y-Y)<m.r+pr){
+      m.dead=true;
+      if(G.shield>0){G.shield=0;burst(m.x,m.y,30,PW.shield,260,0.6);pop("SCHILD!",X,Y-20,PW.shield);G.shake=0.25;if(navigator.vibrate)try{navigator.vibrate(40)}catch(e){}}
+      else{die();return;}
+    }
+  }
+  G.met=G.met.filter(m=>!m.dead);
   for(const it of G.items){
-    cx.globalAlpha=it.a??1;
-    const x=it.x+Math.sin(G.t*2+it.wob)*4;
-    rr(x,it.y,it.w,it.h,10);cx.fillStyle=C.card;cx.fill();cx.lineWidth=1.5;cx.strokeStyle=C.bd;cx.stroke();
-    cx.fillStyle=C.tx;cx.fillText(it.txt,x+it.w/2,it.y+it.h/2+1);
+    it.t+=dt;it.r=L[it.lane];
+    const ix=CX+Math.cos(it.a)*it.r,iy=CY+Math.sin(it.a)*it.r;
+    if(Math.hypot(ix-X,iy-Y)<pr+R*0.03){
+      it.dead=true;
+      if(it.kind==="star"){G.combo++;G.comboT=2.6;G.stars++;const p=10*Math.min(8,G.combo)*(G.x2>0?2:1);G.score+=p;
+        pop("+"+p+(G.combo>1?"  ×"+Math.min(8,G.combo):""),ix,iy-16,"#ffd25e");burst(ix,iy,14,"#ffd25e",150,0.5);
+        if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}}
+      else{const c=PW[it.kind];burst(ix,iy,24,c,200,0.6);
+        if(it.kind==="shield"){G.shield=10;pop("SCHILD",ix,iy-16,c);}
+        if(it.kind==="slow"){G.slow=5;pop("ZEITLUPE",ix,iy-16,c);}
+        if(it.kind==="x2"){G.x2=8;pop("PUNKTE ×2",ix,iy-16,c);}
+        if(it.kind==="bomb"){G.met.forEach(m=>{burst(m.x,m.y,16,"#ff4fd8",220,0.6);G.score+=5;});pop("BOOM! +"+G.met.length*5,CX,CY-R*0.48,c);G.met=[];G.shake=0.35;G.flash=0.25;}
+      }
+    } else if(it.t>it.ttl)it.dead=true;
   }
-  cx.globalAlpha=1;
-  // Schale
-  const py=H-34,pw=G.pw;
-  rr(G.px-pw/2,py,pw,16,8);cx.fillStyle=C.ac;cx.fill();
-  if(G.combo>=4){cx.fillStyle=C.gold;cx.font="700 13px system-ui,sans-serif";cx.fillText(`Combo ×${Math.min(5,1+Math.floor(G.combo/4))}`,G.px,py+30>H?py-12:py+28);}
-  // Rundentimer
-  cx.fillStyle=C.ac2;cx.fillRect(0,0,W,4);cx.fillStyle=C.ac;cx.fillRect(0,0,W*Math.max(0,G.roundT/18),4);
-  for(const f of G.fx){
-    if(f.k==="pop"){cx.globalAlpha=1-f.t/0.9;cx.fillStyle=f.c;cx.font="700 16px system-ui,sans-serif";cx.fillText(f.txt,f.x,f.y-f.t*50);}
-    if(f.k==="banner"){const a=f.t<0.2?f.t/0.2:Math.max(0,1-(f.t-1)/0.6);cx.globalAlpha=a;
-      cx.fillStyle=C.ac;cx.font="800 "+Math.min(30,W/14)+"px system-ui,sans-serif";cx.fillText(f.txt,W/2,H*0.4);
-      cx.fillStyle=C.mu;cx.font="500 14px system-ui,sans-serif";cx.fillText("Nur das fangen, was dazugehört!",W/2,H*0.4+30);}
+  G.items=G.items.filter(i=>!i.dead);
+}
+function stepFx(dt){
+  for(const p of G.parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.96;p.vy*=0.96;}
+  G.parts=G.parts.filter(p=>p.t<p.l);
+  G.pops.forEach(p=>p.t+=dt);G.pops=G.pops.filter(p=>p.t<1);
+  G.shake=Math.max(0,G.shake-dt);G.flash=Math.max(0,G.flash-dt);
+}
+function star5(x,y,r,rot){cx.beginPath();for(let i=0;i<10;i++){const rr=i%2?r*0.45:r,a=rot+i*Math.PI/5-Math.PI/2;cx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}cx.closePath();}
+function draw(ts){
+  const hue=G?lvlHue():220,tt=ts/1000;
+  cx.fillStyle="#0b0b1a";cx.fillRect(0,0,W,H);
+  const g=cx.createRadialGradient(CX,CY,0,CX,CY,Math.max(W,H)*0.7);g.addColorStop(0,`hsla(${hue},70%,22%,.55)`);g.addColorStop(1,"rgba(11,11,26,0)");cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  const sp=G&&state==="play"?(G.slow>0?0.3:1)*(1+G.t*0.02):0.3;
+  for(const s of BG){s.y+=0.0006*s.z*sp;if(s.y>1)s.y-=1;cx.fillStyle=`rgba(255,255,255,${s.z*0.7})`;cx.fillRect(s.x*W,s.y*H,s.z*2,s.z*2);}
+  if(!G){return;}
+  cx.save();
+  if(G.shake>0)cx.translate((Math.random()-.5)*G.shake*40,(Math.random()-.5)*G.shake*40);
+  // Bahnen
+  const L=lanes();cx.lineWidth=2;
+  L.forEach((r,i)=>{cx.strokeStyle=`hsla(${hue},90%,70%,${i===G.lane?0.45:0.15})`;cx.setLineDash([4,10]);cx.lineDashOffset=-tt*20*(i?1:-1);cx.beginPath();cx.arc(CX,CY,r,0,6.283);cx.stroke();});
+  cx.setLineDash([]);
+  // Planet
+  const pg=cx.createRadialGradient(CX-R*0.03,CY-R*0.03,R*0.01,CX,CY,R*0.09);pg.addColorStop(0,`hsl(${hue+40},90%,75%)`);pg.addColorStop(1,`hsl(${hue},80%,35%)`);
+  cx.fillStyle=pg;cx.shadowColor=`hsl(${hue},90%,60%)`;cx.shadowBlur=30;cx.beginPath();cx.arc(CX,CY,R*0.08,0,6.283);cx.fill();cx.shadowBlur=0;
+  // Score in der Mitte
+  if(state==="play"){cx.fillStyle="#ffffff";cx.font=`900 ${Math.round(R*0.055)}px system-ui,sans-serif`;cx.textAlign="center";cx.textBaseline="middle";cx.fillText(G.score,CX,CY+1);}
+  // Items
+  for(const it of G.items){
+    const ix=CX+Math.cos(it.a)*it.r,iy=CY+Math.sin(it.a)*it.r,blink=it.ttl-it.t<1.5&&Math.floor(it.t*8)%2;
+    if(blink)continue;
+    const s=R*0.022*(1+Math.sin(tt*6+it.a)*0.12);
+    if(it.kind==="star"){cx.fillStyle="#ffd25e";cx.shadowColor="#ffd25e";cx.shadowBlur=14;star5(ix,iy,s*1.1,tt);cx.fill();}
+    else{const c=PW[it.kind];cx.fillStyle=c;cx.shadowColor=c;cx.shadowBlur=18;cx.beginPath();cx.arc(ix,iy,s*1.05,0,6.283);cx.fill();
+      cx.shadowBlur=0;cx.fillStyle="#0b0b1a";cx.font=`900 ${Math.round(s*1.1)}px system-ui,sans-serif`;cx.textAlign="center";cx.textBaseline="middle";
+      cx.fillText({shield:"S",slow:"Z",x2:"2",bomb:"✸"}[it.kind],ix,iy+1);}
+    cx.shadowBlur=0;
   }
-  cx.globalAlpha=1;cx.restore();
+  // Meteore
+  for(const m of G.met){
+    cx.save();cx.translate(m.x,m.y);cx.rotate(m.rot);cx.beginPath();
+    for(let i=0;i<9;i++){const a=i/9*6.283,rr=m.r*(0.78+((Math.sin(m.seed+i*2.1)+1)/2)*0.35);cx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+    cx.closePath();cx.fillStyle=m.fast?"#ff4fd8":"#ff7a3c";cx.shadowColor=cx.fillStyle;cx.shadowBlur=16;cx.fill();cx.shadowBlur=0;
+    cx.fillStyle="rgba(0,0,0,.25)";cx.beginPath();cx.arc(m.r*0.2,-m.r*0.15,m.r*0.25,0,6.283);cx.fill();cx.restore();
+  }
+  // Partikel
+  for(const p of G.parts){cx.globalAlpha=1-p.t/p.l;cx.fillStyle=p.c;cx.fillRect(p.x-2,p.y-2,4,4);}cx.globalAlpha=1;
+  // Spieler
+  if(state==="play"){
+    G.trail.forEach(([x,y],i)=>{cx.globalAlpha=i/G.trail.length*0.5;cx.fillStyle=G.x2>0?"#ffd25e":"#5ee7ff";cx.beginPath();cx.arc(x,y,R*0.022*i/G.trail.length,0,6.283);cx.fill();});
+    cx.globalAlpha=1;const X=px(),Y=py(),pr=R*0.022;
+    cx.fillStyle="#ffffff";cx.shadowColor=G.x2>0?"#ffd25e":"#5ee7ff";cx.shadowBlur=22;cx.beginPath();cx.arc(X,Y,pr,0,6.283);cx.fill();cx.shadowBlur=0;
+    if(G.shield>0){cx.strokeStyle=PW.shield;cx.globalAlpha=G.shield<2&&Math.floor(tt*8)%2?0.3:0.9;cx.lineWidth=3;cx.beginPath();cx.arc(X,Y,pr*1.9,0,6.283);cx.stroke();cx.globalAlpha=1;}
+  }
+  // Popups
+  cx.textAlign="center";cx.textBaseline="middle";
+  for(const p of G.pops){cx.globalAlpha=1-p.t;cx.fillStyle=p.c;cx.font=`900 ${Math.round(R*0.045)}px system-ui,sans-serif`;cx.fillText(p.txt,p.x,p.y-p.t*40);}cx.globalAlpha=1;
+  // Statusleisten
+  if(state==="play"){let yy=H-Math.max(28,(parseInt(getComputedStyle(document.body).paddingBottom)||0)+28);
+    [["slow",5,"ZEITLUPE"],["x2",8,"×2"],["shield",10,"SCHILD"]].forEach(([k,mx,lb])=>{if(G[k]>0){const w=Math.min(220,W*0.5);
+      cx.fillStyle="rgba(255,255,255,.12)";cx.fillRect(CX-w/2,yy,w,6);cx.fillStyle=PW[k];cx.fillRect(CX-w/2,yy,w*G[k]/mx,6);
+      cx.font="800 11px system-ui,sans-serif";cx.fillText(lb,CX,yy-9);yy-=26;}});
+    if(G.combo>=3){cx.fillStyle="#ffd25e";cx.font=`900 ${Math.round(R*0.04)}px system-ui,sans-serif`;cx.fillText(`COMBO ×${Math.min(8,G.combo)}`,CX,CY+R*0.46);}
+  }
+  cx.restore();
+  if(G.slow>0&&state==="play"){cx.fillStyle="rgba(179,136,255,.08)";cx.fillRect(0,0,W,H);}
+  if(G.flash>0){cx.fillStyle=`rgba(255,255,255,${G.flash})`;cx.fillRect(0,0,W,H);}
 }
 function loop(ts){
-  if(!running)return;
   const dt=Math.min(0.05,(ts-last)/1000||0);last=ts;
-  if(!paused){step(dt);if(running)draw();}
+  if(!paused){if(G&&state==="play")step(dt);if(G)stepFx(dt);draw(ts);}
   requestAnimationFrame(loop);
 }
-function start(){colors();resize();newGame();$("start").hidden=true;$("over").hidden=true;running=true;paused=false;last=performance.now();requestAnimationFrame(loop);}
-function end(){
-  running=false;const b=getBest(),rec=G.score>b;if(rec)setBest(G.score);
-  $("ovT").textContent=rec?"Neuer Rekord! 🎉":"Vorbei!";
-  $("ovS").textContent=`${G.score} Punkte · ${G.caught} richtig gefangen · ${G.round} Runden`+(rec||!b?"":` · Rekord: ${b}`);
-  const seen={};const m=G.misses.filter(([w,s])=>!seen[w+s]&&(seen[w+s]=1));
-  $("ovM").innerHTML=m.length?"Daneben gegriffen:<br>"+m.map(([w,s])=>{const home=SETS.find(o=>o.y.includes(w));return `<b>${w}</b> gehört nicht zu „${s}“${home?` (sondern zu „${home.n}“)`:""}`;}).join("<br>"):"";
-  $("over").hidden=false;
-}
-$("go").onclick=start;$("again").onclick=start;
+requestAnimationFrame(loop);
 
-// Steuerung
-const stage=$("stage");
-function ptr(e){if(!G)return;const r=stage.getBoundingClientRect();G.px=e.clientX-r.left;}
-stage.addEventListener("pointerdown",e=>{if(!running||e.target.closest(".ov"))return;ptr(e);stage.setPointerCapture?.(e.pointerId);});
-stage.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.buttons)ptr(e);});
+// Eingabe
+addEventListener("pointerdown",e=>{if(e.target.closest("#top a,#top button,#boss"))return;e.preventDefault();tap();});
 addEventListener("keydown",e=>{
-  if(e.key==="ArrowLeft"||e.key==="a")keys.l=true;
-  if(e.key==="ArrowRight"||e.key==="d")keys.r=true;
-  if(e.key===" "||e.key==="Escape"){e.preventDefault();toggleBoss();}
+  if(e.key==="Escape"||e.key==="b"||e.key==="B"){e.preventDefault();toggleBoss();return;}
+  if(e.repeat)return;
+  if([" ","ArrowUp","ArrowDown","Enter","w","s"].includes(e.key)){e.preventDefault();tap();}
 });
-addEventListener("keyup",e=>{if(e.key==="ArrowLeft"||e.key==="a")keys.l=false;if(e.key==="ArrowRight"||e.key==="d")keys.r=false;});
 
 // Tarnmodus
-function toggleBoss(){const b=$("boss"),on=b.hidden;b.hidden=!on;paused=on;document.title=on?"Mitschrift Religion":"Begriffsregen";if(!on)last=performance.now();}
+function toggleBoss(){const b=$("boss"),on=b.hidden;b.hidden=!on;paused=on;document.title=on?"Mitschrift Religion":"Orbit Rush";if(!on)last=performance.now();}
 $("bossBtn").onclick=toggleBoss;
 let lastTap=0;$("boss").addEventListener("pointerdown",()=>{const n=Date.now();if(n-lastTap<350)toggleBoss();lastTap=n;});
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&running&&$("boss").hidden)toggleBoss();});
-
-colors();resize();showBest();
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="play"&&$("boss").hidden)toggleBoss();});
+showBest();
 </script>
 </body>
 </html>
