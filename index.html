@@ -1459,7 +1459,7 @@ async function exportZ(z,kind,msg,btn){if(!z)return;const hs=parseZ(z.body).filt
 /* ---------- GLOSSAR & FORMELN ---------- */
 let gFach=null, gQ="", gKind="";
 const MATHY=["Mathematik","Physik"];
-Views.spiel=function(){$("view").innerHTML=`<section class="card hero"><div><h2>Orbit Rush 🚀</h2><p class="mu">Lernpause: 30 Level, Endlos-Modus, 4 Schwierigkeitsstufen und freischaltbare Skins. Tippen zum Bahnwechseln, Sterne sammeln, Meteoren ausweichen. Mit Tarnmodus (Esc/B oder 🙈), falls jemand guckt.</p></div><a class="btn" href="spiel.html" style="text-decoration:none">Spiel starten</a></section>`;};
+Views.spiel=function(){$("view").innerHTML=`<section class="card hero"><div><h2>Orbit Rush 🚀</h2><p class="mu">Lernpause: 30 Level, Endlos-Modus, Ränge, Shop mit Skins und Hintergründen, Schatzkammer mit Geschenken. Tippen zum Bahnwechseln, Sterne sammeln, Meteoren ausweichen. Mit Tarnmodus (Esc/B oder 🙈), falls jemand guckt.</p></div><a class="btn" href="spiel.html" style="text-decoration:none">Spiel starten</a></section>`;};
 Views.glossar=function(){const S=Store.state,f=gFach||focus()[0],L=(S.gloss[f]||[]),q=gQ.toLowerCase();
   const shown=L.filter(e=>(!gKind||e.k===gKind)&&(!q||(e.t+" "+e.d+" "+(e.th||"")).toLowerCase().includes(q)));
   const groups={};shown.forEach(e=>{(groups[e.th||"Allgemein"]=groups[e.th||"Allgemein"]||[]).push(e);});
