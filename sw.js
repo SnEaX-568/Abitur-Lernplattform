@@ -1,6 +1,6 @@
 /* Service Worker: macht die App offline nutzbar. Alte Caches werden beim Update gelöscht (keine Speicherreste). */
-const CACHE = "abi-lernen-v15";
-const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png"];
+const CACHE = "abi-lernen-v16";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-180.png", "spiel.html"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE))); });
 // Neue Version wartet, bis die Person in der App auf „Jetzt aktualisieren“ tippt
 self.addEventListener("message", e => { if (e.data === "skip") self.skipWaiting(); });
